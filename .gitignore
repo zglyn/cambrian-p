@@ -34,6 +34,7 @@ ckpts*
 .ipynb_checkpoints
 chunyl_scripts
 *.ipynb
+!colab/*.ipynb
 data/*
 # DevContainer
 !.devcontainer/*
