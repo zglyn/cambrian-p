@@ -43,6 +43,7 @@
 | 7. Timestamps vs indices, image paths, exported videos | Real MP4 decoded with decord; report opened in Chromium | Pass: 20/20 videos play, 80/80 images load, links relative |
 | 8. Distinct-video counting, honest shortfall | Unit tests; pilot pass (0 cases, "Minimum NOT met") | Pass |
 | 9. Clean-namespace execution | Whole notebook run top to bottom in one fresh namespace, then switched to full mode and rerun | Pass: no undefined names (pyflakes on all cells in order) |
+| Drive cache for new sessions | Second and third simulated sessions: local disk wiped, Drive kept | Pass: session 2 restores the environment from its tar, copies the weights, makes no Hugging Face downloads or listings, skips re-parsing and verifies the frozen sample. Session 3, with a truncated environment tar and truncated cached weights, ignores both, reinstalls, re-downloads and repairs the cache. With `CACHE_ARCHIVES`, the first use of an archive downloads it to Drive and the second reads that copy |
 | Review interface | Driven with real ipywidgets | Pass: answers hidden until the blind judgment is saved; saves, reload and progress counter work |
 
 The clean-namespace run replaced only Colab/Drive, the Hugging Face client and the GPU worker:
@@ -55,9 +56,26 @@ Everything else ran as written: discovery, schema checks, freezing the selection
 
 - **Model inference (`vsi590k_worker.py`).** It reuses the source notebook's loader, patch, preprocessing and `ask()`. Every model-code name it uses was checked against the pinned commit, and it compiles and lints clean, but it has not run. The pilot (cell 6b) is the first real test.
   - The pilot will show whether the model loads, whether the camera tokens load (the worker checks this and stops if they don't), whether answers are non-empty, and how long a question takes.
+- **The Drive cache in Colab.** It was tested in the simulated sessions above, not on real Colab or Drive.
 - **Hugging Face download and streaming in Colab.** The repository listing, card, annotation download and archive streaming were run from this session against the real Hugging Face URLs. The archive downloads inside Colab were not.
 - **The full 10% run.** It's estimated at 20–40 GPU-hours, from typical 7B prefill speeds. The pilot measures the real figure.
 - **Real failure cases.** None exist until the model has run. Cases in the test run came from the stand-in worker and are not results.
+
+## Drive cache (so new sessions don't download again)
+
+Everything reusable is saved once under `CACHE_ROOT` (`MyDrive/Cambrian-P/cache`) and shared by all runs:
+
+| What | Where | Used only when |
+|---|---|---|
+| Installed environment (venv, uv's Python, the repo checkout; not the weights) | `envs/env-<commit>-<install-steps hash>.tar` | the name matches `CODE_COMMIT` and the exact install steps, and the restored environment passes the same checks as a fresh install (imports `torch` and `decord`, repo at `CODE_COMMIT`) |
+| Model weights | `models/Cambrian-P-7B@<revision>/` | same `MODEL_REVISION`, and every file's size matches the list saved with it |
+| File listing, dataset card, annotation file | `datasets/VSI-590K@<revision>/` | same `DATASET_REVISION`; the annotation file's size and recorded SHA-256 match the repository's |
+| Population summary | `datasets/VSI-590K@<revision>/population-video.json` | same annotation hashes, helper and parser versions; parsing is skipped only when the run's sample is already frozen |
+| Video archives (off by default, `CACHE_ARCHIVES`) | `datasets/VSI-590K@<revision>/archives/` | the file's size matches the repository's |
+
+If a cached copy fails its check it is ignored, the step runs as if there were no cache, and the cache is rewritten. Without archive caching, the cache needs about 25–30 GB of Drive space, mostly the environment and the weights. The full run's archives add up to 172 GB. The brief said to omit an environment backup by default; it is now on because you asked for no reinstalls. It is restored only when it matches the commit and install steps exactly, so incompatible code or dependencies are never restored. Set `CACHE_ENV = False` to turn it off.
+
+Not tested in Colab: the real sizes, how long Drive takes to save and restore, and whether Drive reports free space reliably through `shutil.disk_usage`. If it doesn't, a full Drive only makes saving to the cache fail, and the next session downloads again.
 
 ## Choices to know about
 
