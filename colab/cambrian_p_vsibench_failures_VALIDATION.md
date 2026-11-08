@@ -74,6 +74,7 @@ The clean-namespace run executed every code cell in order in one namespace.
 - **Range-refusal fallback:** Python's `zipfile` hid the "range ignored" error, so the full-download fallback could never trigger. A dedicated probe now raises `RangeNotSupported`.
 - **Pilot picker:** it crashed when a selected video is missing from its archive.
 - **Completion gate:** it read the old `full_run_complete` field, so it always reported inference as incomplete.
+- **Review self-test in Colab (found in the first full Colab run):** it ran in the model venv, which has no IPython, so V1 failed after every other check had passed. It now runs in the notebook kernel, and only video decoding goes to the venv (`--frames_python`). This was reproduced and fixed with two fresh environments that split the packages the same way.
 
 ## Not executed here
 - **Model inference on a GPU** (`vsibench_worker.py`). The pilot (6b) is its first real test: model load, camera tokens (the worker refuses to run without them), non-empty short answers under `max_new_tokens = 16`, and time per question.
