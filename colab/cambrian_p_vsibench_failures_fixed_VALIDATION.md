@@ -34,6 +34,10 @@ Unchanged:
 
 The old message was removed from the executable cells and the embedded `review_cells.py` template, so rerunning setup does not restore it.
 
+- **Background runs (Colab Pro+).**
+  - Everything the cells print is also appended to `logs/notebook-<time>.log` on Drive, with a start, finish or error line for each cell. This was tested in a real IPython shell: rerunning 1a does not log twice.
+  - The last cell no longer unmounts Drive during Run all. Before, unmounting there would have sent later 8c review saves to a local folder that is lost when the runtime ends.
+
 ## Tests executed (no GPU, no dataset download)
 
 | Brief case | Where | Result |
