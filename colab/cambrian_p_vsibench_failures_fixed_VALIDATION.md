@@ -51,6 +51,8 @@ The old message was removed from the executable cells and the embedded `review_c
   - **Filled in for you:** the failure category follows from the verdict and the evidence answer. The reviewed scope records the sheets and extra frames the screen showed.
   - **Unchanged:** the validator and what counts as a verified failure; an empty or default form is still refused. The review self-test now has 63 checks, including the short form.
 
+- **Review sessions need no model and no GPU.** The model weights are now loaded by 6b only when questions still lack a saved answer (and by the pilot-only 6c). Saved answers are never recomputed. With questions pending on a CPU runtime, 6b says so instead of failing later. The harness's second session confirms that with nothing pending, the weights are not loaded.
+
 ## Tests executed (no GPU, no dataset download)
 
 | Brief case | Where | Result |
