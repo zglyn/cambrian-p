@@ -45,6 +45,12 @@ The old message was removed from the executable cells and the embedded `review_c
   - 6a runs it as a pre-flight before any GPU work, and V1 runs it again.
   - Your existing error rows need no cleanup: 6b re-answers every question without a saved answer.
 
+- **Shorter review form in 8c.**
+  - **Step 1, your answer:** only your own answer is asked for before the answers are revealed.
+  - **Step 3, your review:** Verdict; *Evidence visible?* (Yes clearly / Partly / Only in the extra frames / Couldn't find it / Can't tell); *Which frames?* as the `#` numbers printed on the contact sheets (or `f` numbers for extra frames), needed only when the evidence is visible; Confidence; and one Notes field.
+  - **Filled in for you:** the failure category follows from the verdict and the evidence answer. The reviewed scope records the sheets and extra frames the screen showed.
+  - **Unchanged:** the validator and what counts as a verified failure; an empty or default form is still refused. The review self-test now has 63 checks, including the short form.
+
 ## Tests executed (no GPU, no dataset download)
 
 | Brief case | Where | Result |
