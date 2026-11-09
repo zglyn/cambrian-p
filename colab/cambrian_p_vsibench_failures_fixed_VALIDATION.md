@@ -38,6 +38,13 @@ The old message was removed from the executable cells and the embedded `review_c
   - Everything the cells print is also appended to `logs/notebook-<time>.log` on Drive, with a start, finish or error line for each cell. This was tested in a real IPython shell: rerunning 1a does not log twice.
   - The last cell no longer unmounts Drive during Run all. Before, unmounting there would have sent later 8c review saves to a local folder that is lost when the runtime ends.
 
+- **Worker bug (found in your full Colab run, where all 453 questions ended in `KeyError`).**
+  - The inference worker copied a `record_id` field that only VSI-590K questions have. The model answered each question, then saving the answer failed, so all 453 were recorded as execution errors. The worker now saves the benchmark's `native_id`.
+  - Its error handling now catches and retries only the model call. A bug in saving stops the worker immediately with its traceback, instead of being recorded as model failures and retried three times.
+  - `vsibench_worker_selftest.py` runs the **real worker** on a real selected video, with only the model replaced by a stand-in: 11 checks covering decoding and frame hashes, the exact prompt and generation settings, saved rows, retry, out-of-memory, deliberate stop, and a planted bookkeeping bug. On the previously shipped worker it reproduces `KeyError: 'record_id'`; the fixed worker passes 11/11.
+  - 6a runs it as a pre-flight before any GPU work, and V1 runs it again.
+  - Your existing error rows need no cleanup: 6b re-answers every question without a saved answer.
+
 ## Tests executed (no GPU, no dataset download)
 
 | Brief case | Where | Result |
