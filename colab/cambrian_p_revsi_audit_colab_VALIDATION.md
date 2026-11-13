@@ -51,6 +51,15 @@ Test counts:
 - **Worker pre-flight:** 14/14, on a real ReVSI 32-frame video plus a wrong-count video.
 - **End-to-end harness:** 23/23, across full, review form plus CSV import, fresh review-only, and smoke.
 
+## Review workload (added after inference had run)
+
+- **`REVIEW_VIDEOS = 10` (cell A1):** you must final-review only the main question of the **first 10 of the 20 exported candidate videos**. They are taken in the queue's fixed order, which is set before any review, so the set cannot be cherry-picked.
+- **Optional:** the seeded audit questions (unless `AUDIT_REQUIRED = True`) and the other candidates.
+- **Completion:** `review_complete` and the status line ("Required reviews: n/10 final") count only the required items.
+- **No effect on predictions:** these are review settings, outside the run fingerprint and the cache keys, so saved predictions stay valid.
+- **Tested:** the harness ran inference with the previous notebook version, then the new notebook in review-only mode on that run folder. The fingerprint was unchanged, every saved answer was reused with no model, and exactly candidates #1–10 were required (25/25 checks). The acceptance self-test is now 46/46.
+- **Effect on the minimum:** reviewing 10 videos meets the minimum of 10 verified failures only if all 10 are confirmed wrong, with sufficient evidence and a supported reference. The report states the actual count.
+
 ## Expected hardware
 
 - **Inference (D2):** a single large GPU (A100-class), batch size one. **A T4 is not expected to fit** Cambrian-P-7B; the probe reports measured VRAM before the subset runs.
